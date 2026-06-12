@@ -1,0 +1,12 @@
+{
+  "database": {
+    "connection_string": "DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;DATABASE=FactoryTubo;Trusted_Connection=yes;TrustServerCertificate=yes"
+  },
+  "optimizer": {
+    "kerf_mm": 3,
+    "min_offcut_mm": 200,
+    "bar_lengths_mm": [6000, 12000],
+    "usa_ortools": true,
+    "ortools_timeout_s": 5.0
+  }
+}
