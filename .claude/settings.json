@@ -10,7 +10,17 @@
       "Bash(where python *)",
       "Bash(node -e \"const icons = require\\('c:/devfactory/TAGLIOTUBO/frontend/node_modules/react-bootstrap-icons'\\); const names = Object.keys\\(icons\\); console.log\\(names.filter\\(n => /grid|grip|dash|minus|bar|rule|layout|split|column/i.test\\(n\\)\\).join\\('\\\\n'\\)\\)\")",
       "Bash(curl -s \"http://localhost:8000/api/pezzi?cod_commessa=OC202600115&cod_commessa=OC202600234\")",
-      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'{len\\(d\\)} pezzi, commesse: {set\\(p[\\\\\"cod_commessa\\\\\"] for p in d\\)}'\\)\")"
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(f'{len\\(d\\)} pezzi, commesse: {set\\(p[\\\\\"cod_commessa\\\\\"] for p in d\\)}'\\)\")",
+      "Bash(curl -s -w \"SPA: [HTTP %{http_code}]\\\\n\" http://localhost:8000/ -o nul)",
+      "Bash(curl -s -w \"API commesse: [HTTP %{http_code}]\\\\n\" http://localhost:8000/api/commesse -o nul)",
+      "Bash(start http://localhost:8000)",
+      "Bash(pip --version)",
+      "Bash(pip download *)",
+      "Bash(pip show *)",
+      "Bash(rm -rf /tmp/wheeltest; pip download -r backend/requirements.txt -d /tmp/wheeltest --only-binary :all: -q 2>&1 | tail -3; echo \"=== wheels ===\"; ls /tmp/wheeltest | wc -l; ls /tmp/wheeltest)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

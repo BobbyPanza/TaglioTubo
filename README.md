@@ -113,30 +113,33 @@ avviando il processo `uvicorn` e inoltrandogli le richieste.
 - SQL Server **FactoryTubo** raggiungibile, con la vista `XV_TAGLIO_PEZZI` creata
 
 > **Node.js NON serve sul server**: la build del frontend si fa altrove (vedi sotto).
+> **Internet NON serve sul server**: il bundle include i wheel Python per
+> l'installazione offline.
 
-### 1. Build (sulla tua macchina di sviluppo, dove c'è Node)
+### 1. Crea il bundle (sulla tua macchina di sviluppo)
 ```powershell
-.\build.ps1
+.\pack-deploy.ps1
 ```
-Genera `frontend/dist`, lo copia in `backend/static` e crea `backend/logs`.
+Genera **`deploy\TaglioTubo-deploy.zip`** (~50 MB) con: backend, frontend compilato,
+`web.config`, wheel Python offline, script SQL e `install.ps1`.
 
-### 2. Copia sul server
-Copia l'intera cartella **`backend`** sul server (es. `C:\inetpub\TaglioTubo`).
-Include `main.py`, `static/`, `web.config`, `requirements.txt`, ecc.
+> I wheel sono scaricati per la versione Python della macchina di build
+> (attualmente **3.14 x64**): sul server installa la **stessa major.minor**.
 
-### 3. Crea il virtualenv e installa le dipendenze (sul server)
+### 2. Sul server: estrai e installa
+Estrai lo zip in `C:\inetpub\TaglioTubo`, poi da PowerShell (Amministratore):
 ```powershell
 cd C:\inetpub\TaglioTubo
-python -m venv venv
-.\venv\Scripts\python.exe -m pip install -r requirements.txt
+powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
-> `web.config` punta a `.\venv\Scripts\python.exe`: tieni il venv **dentro** questa cartella.
+Lo script crea il venv, installa le dipendenze **offline** dai wheel inclusi,
+crea `logs\` e genera `config.json` dal template.
 
-### 4. Configura `config.json` (sul server)
-```powershell
-copy config.example.json config.json
-```
+### 3. Configura `config.json` (sul server)
 Modifica la connection string col server SQL del cliente (Windows Auth).
+
+### 4. Crea la vista SQL (una volta sola)
+Esegui `sql\XV_TAGLIO_PEZZI.sql` (incluso nel bundle) sul DB FactoryTubo.
 
 ### 5. Configura il sito IIS
 - Crea un **sito** (o un'applicazione) con **cartella fisica = `C:\inetpub\TaglioTubo`**

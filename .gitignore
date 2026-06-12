@@ -9,3 +9,5 @@ frontend/dist/
 backend/static/
 backend/venv/
 backend/logs/
+deploy/TaglioTubo/
+deploy/*.zip
