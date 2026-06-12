@@ -13,10 +13,49 @@
 $ErrorActionPreference = "Stop"
 $root = $PSScriptRoot
 
-# --- 1. Verifica Python ---
-Write-Host "==> Verifica Python..." -ForegroundColor Cyan
-$pyVer = & python --version
-Write-Host "    Trovato: $pyVer"
+# --- 1. Trova Python (PATH, py launcher, percorsi standard) ---
+Write-Host "==> Cerco Python 3.14..." -ForegroundColor Cyan
+
+function Find-Python {
+    # 1) nel PATH
+    $cmd = Get-Command python -ErrorAction SilentlyContinue
+    if ($cmd) { return $cmd.Source }
+    # 2) py launcher (installato di default con Python per tutti gli utenti)
+    $py = Get-Command py -ErrorAction SilentlyContinue
+    if ($py) {
+        $exe = & py -3.14 -c "import sys; print(sys.executable)" 2>$null
+        if ($LASTEXITCODE -eq 0 -and $exe) { return $exe.Trim() }
+        $exe = & py -3 -c "import sys; print(sys.executable)" 2>$null
+        if ($LASTEXITCODE -eq 0 -and $exe) { return $exe.Trim() }
+    }
+    # 3) percorsi di installazione standard
+    $candidates = @(
+        "C:\Program Files\Python314\python.exe",
+        "C:\Python314\python.exe",
+        "$env:LOCALAPPDATA\Programs\Python\Python314\python.exe"
+    )
+    foreach ($c in $candidates) {
+        if (Test-Path $c) { return $c }
+    }
+    return $null
+}
+
+$python = Find-Python
+if (-not $python) {
+    Write-Host ""
+    Write-Host "ERRORE: Python non trovato su questo server." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Installa Python 3.14 (64 bit) da https://www.python.org/downloads/" -ForegroundColor Yellow
+    Write-Host "Durante il setup spunta:" -ForegroundColor Yellow
+    Write-Host "  [x] Add python.exe to PATH" -ForegroundColor Yellow
+    Write-Host "  e preferibilmente 'Install for all users' (Customize installation)." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Poi rilancia questo script." -ForegroundColor Yellow
+    exit 1
+}
+
+$pyVer = & $python --version
+Write-Host "    Trovato: $pyVer ($python)"
 if ($pyVer -notmatch "Python 3\.14\.") {
     Write-Host ""
     Write-Host "ATTENZIONE: i wheel inclusi sono per Python 3.14 (64 bit)." -ForegroundColor Yellow
@@ -27,7 +66,8 @@ if ($pyVer -notmatch "Python 3\.14\.") {
 # --- 2. Virtualenv ---
 Write-Host "==> Creo il virtualenv..." -ForegroundColor Cyan
 if (-not (Test-Path "$root\venv")) {
-    python -m venv "$root\venv"
+    & $python -m venv "$root\venv"
+    if ($LASTEXITCODE -ne 0) { throw "Creazione venv fallita." }
 }
 
 # --- 3. Dipendenze (offline, dai wheel inclusi) ---
