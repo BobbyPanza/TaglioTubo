@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from typing import Optional, List
 
 from db import fetch_pezzi, fetch_commesse, get_config
@@ -77,3 +79,14 @@ def post_ottimizza(body: RichiestaOttimizzazione):
         return ottimizza(body.pezzi, cfg)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Serving del frontend (build di produzione) ---
+# In produzione (IIS) la build statica del frontend viene copiata in backend/static
+# da build.ps1. Servendola dallo stesso processo, le chiamate relative a /api sono
+# same-origin: niente CORS, niente reverse proxy.
+# Questo mount va registrato DOPO le route /api, così le API hanno la precedenza.
+# In sviluppo la cartella static non esiste e si usa il dev server Vite (porta 5173).
+_STATIC_DIR = Path(__file__).parent / "static"
+if _STATIC_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(_STATIC_DIR), html=True), name="spa")

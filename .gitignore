@@ -4,3 +4,8 @@ __pycache__/
 .env
 node_modules/
 frontend/dist/
+
+# Artefatti deploy / produzione
+backend/static/
+backend/venv/
+backend/logs/
